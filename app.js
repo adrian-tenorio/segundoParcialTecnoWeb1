@@ -103,3 +103,61 @@ const cargarPopulares = async () => {
         manejarError(error);
     }
 };
+
+//2) Tarjeta de serie
+const crearTarjeta = (serie) => {
+    const { id, name, first_air_date, vote_average, poster_path } = serie;
+    const año = first_air_date ? first_air_date.split('-')[0] : 'N/A';
+    const rating = vote_average ? vote_average.toFixed(1) : 'N/A';
+    const imagen = poster_path ? `<img class="serie-card__image" src="${IMAGE_URL}${poster_path}" alt="${name}">` : '';
+    return `
+        <article class="serie-card" data-id="${id}">
+            <div class="serie-card__poster">
+                ${imagen}
+                <span class="serie-card__rating"> ${rating}</span>
+            </div>
+            <div class="serie-card__content">
+                <h3 class="serie-card__title">${name}</h3>
+                <p class="serie-card__year"> ${año}</p>
+            </div>
+        </article>
+    `;
+};
+
+
+// 3) Busqueda
+const buscarSeries = async (texto) => {
+    const datos = await pedirJSON(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(texto)}&language=es-ES`);
+    return datos.results;
+};
+ 
+const ejecutarBusqueda = async () => {
+    const texto = searchInput.value.trim();
+    if (texto === '') {
+        await cargarPopulares();
+        return;
+    }
+    mostrarLoading();
+    try {
+        const series = await buscarSeries(texto);
+        console.log(`🔍 ${series.length} resultados para "${texto}"`);
+        ocultarLoading();
+        mostrarResultados(`Resultados para "${texto}"`, series);
+    } catch (error) {
+        manejarError(error);
+    }
+};
+ 
+let temporizadorBusqueda;
+ 
+searchInput.addEventListener('keyup', () => {
+    clearTimeout(temporizadorBusqueda);
+    temporizadorBusqueda = setTimeout(ejecutarBusqueda, 500);
+});
+ 
+clearBtn.addEventListener('click', () => {
+    clearTimeout(temporizadorBusqueda);
+    searchInput.value = '';
+    cargarPopulares();
+});
+
