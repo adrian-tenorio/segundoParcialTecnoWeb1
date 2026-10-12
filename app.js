@@ -209,3 +209,31 @@ seriesGrid.addEventListener('click', (event) => {
 modalClose.addEventListener('click', cerrarModal);
 modalOverlay.addEventListener('click', cerrarModal);
  
+
+// Manejo de errores 
+const notificacion = document.getElementById('notification');
+ 
+const obtenerMensajeError = (error) => {
+    if (error.message.includes('401')) {
+        return 'API Key inválida';
+    }
+    if (error instanceof TypeError || !navigator.onLine) {
+        return 'Error de conexión';
+    }
+    return 'No se pudo cargar la información';
+};
+ 
+const manejarError = (error) => {
+    console.error('Error:', error);
+    mostrarError(obtenerMensajeError(error));
+};
+ 
+const mostrarNotificacion = (mensaje, tipo = 'error') => {
+    notificacion.textContent = mensaje;
+    notificacion.className = `notification notification--${tipo} notification--show`;
+    setTimeout(() => notificacion.classList.remove('notification--show'), 3000);
+};
+ 
+retryBtn.addEventListener('click', ejecutarBusqueda);
+ 
+cargarPopulares();
